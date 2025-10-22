@@ -33,6 +33,13 @@
             color: #ff6b9d;
         }
 
+        body.cat-pattern {
+            background-image: url('cat-pattern.png');
+            background-size: 400px 400px;
+            background-repeat: repeat;
+            background-color: #fff9f9;
+        }
+
         body.cat .theme-toggle,
         body.cat .btn,
         body.cat .mode-tab {
@@ -45,6 +52,14 @@
 
         body.cat .stat-number {
             color: #ff6b9d;
+        }
+
+
+        body.cat-pattern .container {
+            background: rgba(255, 255, 255, 0.651);
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
         }
 
         .cat-emoji {
@@ -247,16 +262,6 @@
 
         body.dark .sound-test-btn:hover {
             background: #2a2a2a;
-        }
-
-        .stats-reset-section {
-            padding: 8px;
-            border-bottom: 1px solid #e8e8e8;
-            margin-bottom: 8px;
-        }
-
-        body.dark .stats-reset-section {
-            border-bottom-color: #3a3a3a;
         }
 
         .stats-reset-btn {
@@ -732,6 +737,10 @@
             <span class="theme-color" style="background: linear-gradient(135deg, #ffeef8 0%, #ffb8d1 100%);"></span>
             <span data-lang="themeCat">🐱 고양이</span>
         </button>
+        <button class="theme-option" data-theme="cat-pattern">
+            <span class="theme-color" style="background: #6e6e6e;"></span>
+            <span data-lang="themeCatPattern">안경 고양이</span>
+        </button>
     </div>
 
     <div class="cat-emoji cat-1">😺</div>
@@ -804,6 +813,7 @@
                 themeLight: '라이트',
                 themeDark: '다크',
                 themeCat: '🐱 고양이',
+                themeCatPattern: '안경 고양이',
                 focusReady: '집중할 시간이에요',
                 breakReady: '휴식 시간이에요',
                 focusing: '집중 중',
@@ -839,6 +849,7 @@
                 themeLight: 'Light',
                 themeDark: 'Dark',
                 themeCat: '🐱 Cat',
+                themeCatPattern: 'Glasses Cat',
                 focusReady: 'Time to focus',
                 breakReady: 'Break time',
                 focusing: 'Focusing',
@@ -874,6 +885,7 @@
                 themeLight: 'ライト',
                 themeDark: 'ダーク',
                 themeCat: '🐱 猫',
+                themeCatPattern: 'メガネ猫',
                 focusReady: '集中する時間です',
                 breakReady: '休憩時間です',
                 focusing: '集中中',
@@ -894,7 +906,6 @@
             if (saved) {
                 currentLanguage = saved;
             } else {
-                // 브라우저 언어 자동 감지
                 const browserLang = navigator.language || navigator.userLanguage;
                 
                 if (browserLang.startsWith('ja')) {
@@ -1071,7 +1082,7 @@
                 oscillator.connect(gainNode);
                 gainNode.connect(audioContext.destination);
                 
-                const isCatTheme = document.body.classList.contains('cat');
+                const isCatTheme = document.body.classList.contains('cat') || document.body.classList.contains('cat-pattern');
                 oscillator.frequency.value = isCatTheme ? 1000 : 800;
                 oscillator.type = 'sine';
                 
@@ -1280,7 +1291,7 @@
 
         function showNotification(text) {
             const translatedText = translations[currentLanguage][text];
-            const isCatTheme = document.body.classList.contains('cat');
+            const isCatTheme = document.body.classList.contains('cat') || document.body.classList.contains('cat-pattern');
             notification.textContent = isCatTheme ? '🐱 ' + translatedText + ' 🐱' : translatedText;
             notification.classList.add('show');
             
@@ -1602,3 +1613,4 @@
     </script>
 </body>
 </html>
+                
