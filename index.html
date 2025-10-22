@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pomodoro Timer</title>
+    <title>뽀모도로 타이머</title>
     <style>
         * {
             margin: 0;
@@ -123,6 +123,8 @@
             display: none;
             z-index: 100;
             min-width: 200px;
+            max-height: calc(100vh - 100px);
+            overflow-y: auto;
         }
 
         .theme-menu.show {
@@ -634,6 +636,8 @@
             .theme-menu {
                 top: 60px;
                 right: 16px;
+                left: 16px;
+                max-height: calc(100vh - 80px);
             }
         }
 
