@@ -1,0 +1,1586 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pomodoro Timer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Malgun Gothic', sans-serif;
+            background: #ffffff;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            color: #1a1a1a;
+            transition: all 0.3s ease;
+        }
+
+        body.dark {
+            background: #1a1a1a;
+            color: #e8e8e8;
+        }
+
+        body.cat {
+            background: linear-gradient(135deg, #ffeef8 0%, #ffb8d1 100%);
+            color: #ff6b9d;
+        }
+
+        body.cat .theme-toggle,
+        body.cat .btn,
+        body.cat .mode-tab {
+            color: #ff6b9d;
+        }
+
+        body.cat .timer-display {
+            color: #ff6b9d;
+        }
+
+        body.cat .stat-number {
+            color: #ff6b9d;
+        }
+
+        .cat-emoji {
+            font-size: 3em;
+            position: absolute;
+            animation: float 3s ease-in-out infinite;
+            pointer-events: none;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+
+        .cat-1 { top: 20%; left: 10%; animation-delay: 0s; }
+        .cat-2 { top: 30%; right: 10%; animation-delay: 1s; }
+        .cat-3 { bottom: 20%; left: 15%; animation-delay: 2s; }
+        .cat-4 { bottom: 30%; right: 15%; animation-delay: 1.5s; }
+
+        body:not(.cat) .cat-emoji {
+            display: none;
+        }
+
+        .cat-center {
+            text-align: center;
+            font-size: 4em;
+            margin-bottom: 20px;
+            animation: bounce 2s ease-in-out infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        body:not(.cat) .cat-center {
+            display: none;
+        }
+
+        .theme-toggle {
+            position: fixed;
+            top: 24px;
+            right: 24px;
+            background: rgba(0, 0, 0, 0.05);
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9em;
+            font-weight: 500;
+            transition: all 0.3s;
+            z-index: 100;
+            color: inherit;
+        }
+
+        .theme-toggle:hover {
+            background: rgba(0, 0, 0, 0.1);
+        }
+
+        body.dark .theme-toggle {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        body.dark .theme-toggle:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .theme-menu {
+            position: fixed;
+            top: 70px;
+            right: 24px;
+            background: white;
+            border-radius: 12px;
+            padding: 12px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+            display: none;
+            z-index: 100;
+            min-width: 200px;
+        }
+
+        .theme-menu.show {
+            display: block;
+        }
+
+        body.dark .theme-menu {
+            background: #2a2a2a;
+        }
+
+        .name-section {
+            padding: 8px 8px 16px 8px;
+            border-bottom: 1px solid #e8e8e8;
+            margin-bottom: 8px;
+        }
+
+        body.dark .name-section {
+            border-bottom-color: #3a3a3a;
+        }
+
+        .time-section {
+            padding: 8px 8px 16px 8px;
+            border-bottom: 1px solid #e8e8e8;
+            margin-bottom: 8px;
+        }
+
+        body.dark .time-section {
+            border-bottom-color: #3a3a3a;
+        }
+
+        .language-section {
+            padding: 8px 8px 16px 8px;
+            border-bottom: 1px solid #e8e8e8;
+            margin-bottom: 8px;
+        }
+
+        body.dark .language-section {
+            border-bottom-color: #3a3a3a;
+        }
+
+        .stats-reset-section {
+            padding: 8px;
+            border-bottom: 1px solid #e8e8e8;
+            margin-bottom: 8px;
+        }
+
+        body.dark .stats-reset-section {
+            border-bottom-color: #3a3a3a;
+        }
+
+        .sound-section {
+            padding: 8px 8px 16px 8px;
+            border-bottom: 1px solid #e8e8e8;
+            margin-bottom: 8px;
+        }
+
+        body.dark .sound-section {
+            border-bottom-color: #3a3a3a;
+        }
+
+        .sound-label {
+            font-size: 0.75em;
+            color: #999;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .sound-select {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 0.85em;
+            font-family: inherit;
+            background: #fafafa;
+            color: #1a1a1a;
+            cursor: pointer;
+        }
+
+        .sound-select:focus {
+            outline: none;
+            border-color: #1a1a1a;
+        }
+
+        body.dark .sound-select {
+            background: #1a1a1a;
+            border-color: #3a3a3a;
+            color: #e8e8e8;
+        }
+
+        body.dark .sound-select:focus {
+            border-color: #e8e8e8;
+        }
+
+        .sound-test-btn {
+            width: 100%;
+            padding: 8px 12px;
+            margin-top: 8px;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            background: #fafafa;
+            color: #666;
+            cursor: pointer;
+            font-size: 0.85em;
+            transition: all 0.2s;
+        }
+
+        .sound-test-btn:hover {
+            background: #f0f0f0;
+        }
+
+        body.dark .sound-test-btn {
+            background: #1a1a1a;
+            border-color: #3a3a3a;
+            color: #999;
+        }
+
+        body.dark .sound-test-btn:hover {
+            background: #2a2a2a;
+        }
+
+        .stats-reset-section {
+            padding: 8px;
+            border-bottom: 1px solid #e8e8e8;
+            margin-bottom: 8px;
+        }
+
+        body.dark .stats-reset-section {
+            border-bottom-color: #3a3a3a;
+        }
+
+        .stats-reset-btn {
+            width: 100%;
+            padding: 10px 16px;
+            border: 1px solid #ff4444;
+            border-radius: 6px;
+            background: #fff5f5;
+            color: #ff4444;
+            cursor: pointer;
+            font-size: 0.85em;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .stats-reset-btn:hover {
+            background: #ff4444;
+            color: white;
+        }
+
+        body.dark .stats-reset-btn {
+            background: #2a1a1a;
+            border-color: #ff6666;
+            color: #ff6666;
+        }
+
+        body.dark .stats-reset-btn:hover {
+            background: #ff4444;
+            color: white;
+        }
+
+        .language-label {
+            font-size: 0.75em;
+            color: #999;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .language-buttons {
+            display: flex;
+            gap: 6px;
+        }
+
+        .language-btn {
+            flex: 1;
+            padding: 8px 12px;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            background: #fafafa;
+            cursor: pointer;
+            font-size: 0.85em;
+            transition: all 0.2s;
+            color: #666;
+        }
+
+        .language-btn:hover {
+            background: #f0f0f0;
+        }
+
+        .language-btn.active {
+            background: #1a1a1a;
+            color: white;
+            border-color: #1a1a1a;
+        }
+
+        body.dark .language-btn {
+            background: #1a1a1a;
+            border-color: #3a3a3a;
+            color: #999;
+        }
+
+        body.dark .language-btn:hover {
+            background: #2a2a2a;
+        }
+
+        body.dark .language-btn.active {
+            background: #e8e8e8;
+            color: #1a1a1a;
+            border-color: #e8e8e8;
+        }
+
+        .name-label {
+            font-size: 0.75em;
+            color: #999;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .time-label {
+            font-size: 0.75em;
+            color: #999;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .time-inputs {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .time-input-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .time-input-label {
+            font-size: 0.8em;
+            color: #666;
+            min-width: 70px;
+        }
+
+        body.dark .time-input-label {
+            color: #999;
+        }
+
+        .time-input {
+            flex: 1;
+            padding: 6px 10px;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 0.85em;
+            font-family: inherit;
+            background: #fafafa;
+            color: #1a1a1a;
+        }
+
+        .time-input:focus {
+            outline: none;
+            border-color: #1a1a1a;
+        }
+
+        body.dark .time-input {
+            background: #1a1a1a;
+            border-color: #3a3a3a;
+            color: #e8e8e8;
+        }
+
+        body.dark .time-input:focus {
+            border-color: #e8e8e8;
+        }
+
+        .name-input {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 0.85em;
+            font-family: inherit;
+            background: #fafafa;
+            color: #1a1a1a;
+        }
+
+        .name-input:focus {
+            outline: none;
+            border-color: #1a1a1a;
+        }
+
+        body.dark .name-input {
+            background: #1a1a1a;
+            border-color: #3a3a3a;
+            color: #e8e8e8;
+        }
+
+        body.dark .name-input:focus {
+            border-color: #e8e8e8;
+        }
+
+        .theme-option {
+            padding: 12px 20px;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            font-size: 0.9em;
+            width: 100%;
+            text-align: left;
+            border-radius: 6px;
+            transition: background 0.2s;
+            color: #1a1a1a;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        body.dark .theme-option {
+            color: #e8e8e8;
+        }
+
+        .theme-option:hover {
+            background: #f5f5f5;
+        }
+
+        body.dark .theme-option:hover {
+            background: #3a3a3a;
+        }
+
+        .theme-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            border: 2px solid rgba(0,0,0,0.1);
+        }
+
+        .container {
+            max-width: 500px;
+            width: 100%;
+        }
+
+        h1 {
+            font-size: 1.5em;
+            font-weight: 600;
+            margin-bottom: 40px;
+            text-align: center;
+            transition: color 0.3s;
+        }
+
+        .mode-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 60px;
+            justify-content: center;
+            background: rgba(0, 0, 0, 0.05);
+            padding: 4px;
+            border-radius: 8px;
+            transition: background 0.3s;
+        }
+
+        body.dark .mode-tabs {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .mode-tab {
+            padding: 10px 20px;
+            border: none;
+            background: transparent;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9em;
+            font-weight: 500;
+            color: inherit;
+            opacity: 0.6;
+            transition: all 0.2s;
+        }
+
+        .mode-tab:hover {
+            opacity: 0.8;
+        }
+
+        .mode-tab.active {
+            background: rgba(255, 255, 255, 0.9);
+            color: #1a1a1a;
+            opacity: 1;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        body.dark .mode-tab.active {
+            background: rgba(255, 255, 255, 0.2);
+            color: #ffffff;
+        }
+
+        .timer-display {
+            font-size: 6em;
+            font-weight: 300;
+            text-align: center;
+            margin: 60px 0;
+            font-variant-numeric: tabular-nums;
+            letter-spacing: -0.02em;
+            transition: color 0.3s;
+        }
+
+        .controls {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            margin-bottom: 60px;
+        }
+
+        .btn {
+            padding: 14px 32px;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            font-size: 0.95em;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: rgba(255, 255, 255, 0.1);
+            color: inherit;
+        }
+
+        .btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .btn-start {
+            background: rgba(0, 0, 0, 0.8);
+            color: #ffffff;
+            border-color: transparent;
+        }
+
+        .btn-start:hover {
+            background: rgba(0, 0, 0, 0.9);
+        }
+
+        body.dark .btn-start {
+            background: rgba(255, 255, 255, 0.25);
+            color: inherit;
+        }
+
+        body.dark .btn-start:hover {
+            background: rgba(255, 255, 255, 0.35);
+        }
+
+        .message {
+            text-align: center;
+            font-size: 0.95em;
+            opacity: 0.7;
+            margin-bottom: 40px;
+            min-height: 24px;
+            transition: color 0.3s;
+        }
+
+        .stats {
+            padding-top: 40px;
+            border-top: 1px solid rgba(0, 0, 0, 0.1);
+            margin-bottom: 40px;
+            transition: border-color 0.3s;
+        }
+
+        body.dark .stats {
+            border-top-color: rgba(255, 255, 255, 0.15);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            text-align: center;
+        }
+
+        .stat-item {
+            padding: 24px;
+        }
+
+        .stat-number {
+            font-size: 2.5em;
+            font-weight: 300;
+            margin-bottom: 8px;
+            transition: color 0.3s;
+        }
+
+        .stat-label {
+            opacity: 0.7;
+            font-size: 0.85em;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+
+        @media (max-width: 768px) {
+            .timer-display {
+                font-size: 4.5em;
+                margin: 40px 0;
+            }
+
+            .stats-grid {
+                gap: 16px;
+            }
+
+            .theme-toggle {
+                top: 16px;
+                right: 16px;
+                padding: 10px 16px;
+                font-size: 0.85em;
+            }
+
+            .theme-menu {
+                top: 60px;
+                right: 16px;
+            }
+        }
+
+        .notification {
+            position: fixed;
+            top: 24px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-100px);
+            background: rgba(0, 0, 0, 0.9);
+            color: white;
+            padding: 16px 24px;
+            border-radius: 8px;
+            font-size: 0.9em;
+            font-weight: 500;
+            transition: transform 0.3s;
+            z-index: 1000;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        body.dark .notification {
+            background: rgba(255, 255, 255, 0.95);
+            color: #1a1a1a;
+        }
+
+        .notification.show {
+            transform: translateX(-50%) translateY(0);
+        }
+    </style>
+</head>
+<body>
+    <button class="theme-toggle" id="themeToggle"><span data-lang="settings">설정</span></button>
+    <div class="theme-menu" id="themeMenu">
+        <div class="name-section">
+            <div class="name-label" data-lang="timerName">타이머 이름</div>
+            <input type="text" class="name-input" id="timerName" maxlength="20">
+        </div>
+        <div class="language-section">
+            <div class="language-label" data-lang="language">언어</div>
+            <div class="language-buttons">
+                <button class="language-btn active" data-lang-btn="ko">🇰🇷</button>
+                <button class="language-btn" data-lang-btn="en">🇺🇸</button>
+                <button class="language-btn" data-lang-btn="ja">🇯🇵</button>
+            </div>
+        </div>
+        <div class="time-section">
+            <div class="time-label" data-lang="timeSettings">시간 설정 (분)</div>
+            <div class="time-inputs">
+                <div class="time-input-row">
+                    <span class="time-input-label" data-lang="focus">집중</span>
+                    <input type="number" class="time-input" id="focusTime" min="1" max="120" value="25">
+                </div>
+                <div class="time-input-row">
+                    <span class="time-input-label" data-lang="shortBreak">짧은 휴식</span>
+                    <input type="number" class="time-input" id="shortTime" min="1" max="60" value="5">
+                </div>
+                <div class="time-input-row">
+                    <span class="time-input-label" data-lang="longBreak">긴 휴식</span>
+                    <input type="number" class="time-input" id="longTime" min="1" max="60" value="15">
+                </div>
+            </div>
+        </div>
+        <div class="sound-section">
+            <div class="sound-label" data-lang="soundSettings">알람 소리</div>
+            <select class="sound-select" id="soundSelect">
+                <option value="default" data-lang="soundDefault">기본</option>
+                <option value="bell" data-lang="soundBell">벨</option>
+                <option value="triple" data-lang="soundTriple">3회 알람</option>
+                <option value="melody" data-lang="soundMelody">멜로디</option>
+                <option value="marimba" data-lang="soundMarimba">마림바</option>
+                <option value="ding" data-lang="soundDing">띵동</option>
+            </select>
+            <button class="sound-test-btn" id="soundTestBtn" data-lang="soundTest">🔊 소리 테스트</button>
+        </div>
+        <div class="stats-reset-section">
+            <button class="stats-reset-btn" id="statsResetBtn" data-lang="resetStats">통계 초기화</button>
+        </div>
+        <button class="theme-option" data-theme="light">
+            <span class="theme-color" style="background: #ffffff; border-color: #e0e0e0;"></span>
+            <span data-lang="themeLight">라이트</span>
+        </button>
+        <button class="theme-option" data-theme="dark">
+            <span class="theme-color" style="background: #1a1a1a;"></span>
+            <span data-lang="themeDark">다크</span>
+        </button>
+        <button class="theme-option" data-theme="cat">
+            <span class="theme-color" style="background: linear-gradient(135deg, #ffeef8 0%, #ffb8d1 100%);"></span>
+            <span data-lang="themeCat">🐱 고양이</span>
+        </button>
+    </div>
+
+    <div class="cat-emoji cat-1">😺</div>
+    <div class="cat-emoji cat-2">😸</div>
+    <div class="cat-emoji cat-3">😻</div>
+    <div class="cat-emoji cat-4">🐱</div>
+
+    <div class="container">
+        <h1>뽀모도로 타이머</h1>
+
+        <div class="cat-center" id="catCenter">😺</div>
+        
+        <div class="mode-tabs">
+            <button class="mode-tab active" data-mode="focus" data-lang="focus">집중</button>
+            <button class="mode-tab" data-mode="short" data-lang="shortBreak">짧은 휴식</button>
+            <button class="mode-tab" data-mode="long" data-lang="longBreak">긴 휴식</button>
+        </div>
+
+        <div class="timer-display" id="timerDisplay">25:00</div>
+
+        <div class="message" id="message">집중할 시간이에요</div>
+
+        <div class="controls">
+            <button class="btn btn-start" id="startBtn" data-lang="start">시작</button>
+            <button class="btn btn-reset" id="resetBtn" data-lang="reset">리셋</button>
+        </div>
+
+        <div class="stats">
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-number" id="completedCount">0</div>
+                    <div class="stat-label" data-lang="completedPomodoros">완료한 뽀모도로</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number" id="totalTime">0</div>
+                    <div class="stat-label" data-lang="totalFocusTime">총 집중 시간 (분)</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="notification" id="notification">
+        시간이 끝났어요
+    </div>
+
+    <script>
+        const translations = {
+            ko: {
+                settings: '설정',
+                timerName: '타이머 이름',
+                language: '언어',
+                timeSettings: '시간 설정 (분)',
+                focus: '집중',
+                shortBreak: '짧은 휴식',
+                longBreak: '긴 휴식',
+                start: '시작',
+                pause: '일시정지',
+                reset: '리셋',
+                resetStats: '통계 초기화',
+                soundSettings: '알람 소리',
+                soundDefault: '기본',
+                soundBell: '벨',
+                soundTriple: '3회 알람',
+                soundMelody: '멜로디',
+                soundMarimba: '마림바',
+                soundDing: '띵동',
+                soundTest: '🔊 소리 테스트',
+                completedPomodoros: '완료한 뽀모도로',
+                totalFocusTime: '총 집중 시간 (분)',
+                themeLight: '라이트',
+                themeDark: '다크',
+                themeCat: '🐱 고양이',
+                focusReady: '집중할 시간이에요',
+                breakReady: '휴식 시간이에요',
+                focusing: '집중 중',
+                breaking: '휴식 중',
+                paused: '일시정지',
+                focusComplete: '잘했어요! 휴식 시간',
+                breakComplete: '휴식 끝! 다시 집중',
+                defaultTimerName: '뽀모도로 타이머',
+                confirmReset: '정말 통계를 초기화하시겠습니까?'
+            },
+            en: {
+                settings: 'Settings',
+                timerName: 'Timer Name',
+                language: 'Language',
+                timeSettings: 'Time Settings (min)',
+                focus: 'Focus',
+                shortBreak: 'Short Break',
+                longBreak: 'Long Break',
+                start: 'Start',
+                pause: 'Pause',
+                reset: 'Reset',
+                resetStats: 'Reset Statistics',
+                soundSettings: 'Alarm Sound',
+                soundDefault: 'Default',
+                soundBell: 'Bell',
+                soundTriple: 'Triple Beep',
+                soundMelody: 'Melody',
+                soundMarimba: 'Marimba',
+                soundDing: 'Ding Dong',
+                soundTest: '🔊 Test Sound',
+                completedPomodoros: 'Completed Pomodoros',
+                totalFocusTime: 'Total Focus Time (min)',
+                themeLight: 'Light',
+                themeDark: 'Dark',
+                themeCat: '🐱 Cat',
+                focusReady: 'Time to focus',
+                breakReady: 'Break time',
+                focusing: 'Focusing',
+                breaking: 'Taking a break',
+                paused: 'Paused',
+                focusComplete: 'Great job! Break time',
+                breakComplete: 'Break over! Focus again',
+                defaultTimerName: 'Pomodoro Timer',
+                confirmReset: 'Are you sure you want to reset statistics?'
+            },
+            ja: {
+                settings: '設定',
+                timerName: 'タイマー名',
+                language: '言語',
+                timeSettings: '時間設定 (分)',
+                focus: '集中',
+                shortBreak: '短い休憩',
+                longBreak: '長い休憩',
+                start: '開始',
+                pause: '一時停止',
+                reset: 'リセット',
+                resetStats: '統計リセット',
+                soundSettings: 'アラーム音',
+                soundDefault: 'デフォルト',
+                soundBell: 'ベル',
+                soundTriple: '3回アラーム',
+                soundMelody: 'メロディ',
+                soundMarimba: 'マリンバ',
+                soundDing: 'ディンドン',
+                soundTest: '🔊 音をテスト',
+                completedPomodoros: '完了したポモドーロ',
+                totalFocusTime: '総集中時間 (分)',
+                themeLight: 'ライト',
+                themeDark: 'ダーク',
+                themeCat: '🐱 猫',
+                focusReady: '集中する時間です',
+                breakReady: '休憩時間です',
+                focusing: '集中中',
+                breaking: '休憩中',
+                paused: '一時停止',
+                focusComplete: 'よくできました！休憩時間',
+                breakComplete: '休憩終了！また集中',
+                defaultTimerName: 'ポモドーロタイマー',
+                confirmReset: '本当に統計をリセットしますか？'
+            }
+        };
+
+        let currentLanguage = 'ko';
+
+        function loadLanguage() {
+            const saved = localStorage.getItem('language');
+            
+            if (saved) {
+                currentLanguage = saved;
+            } else {
+                // 브라우저 언어 자동 감지
+                const browserLang = navigator.language || navigator.userLanguage;
+                
+                if (browserLang.startsWith('ja')) {
+                    currentLanguage = 'ja';
+                } else if (browserLang.startsWith('en')) {
+                    currentLanguage = 'en';
+                } else {
+                    currentLanguage = 'ko';
+                }
+                
+                localStorage.setItem('language', currentLanguage);
+            }
+            
+            applyLanguage();
+        }
+
+        function applyLanguage() {
+            document.querySelectorAll('[data-lang]').forEach(el => {
+                const key = el.getAttribute('data-lang');
+                if (translations[currentLanguage][key]) {
+                    if (el.tagName === 'OPTION') {
+                        el.textContent = translations[currentLanguage][key];
+                    } else {
+                        el.textContent = translations[currentLanguage][key];
+                    }
+                }
+            });
+
+            document.querySelectorAll('.language-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.getAttribute('data-lang-btn') === currentLanguage) {
+                    btn.classList.add('active');
+                }
+            });
+
+            const currentName = timerTitle.textContent.trim();
+            
+            const defaultNames = [
+                '뽀모도로 타이머',
+                'Pomodoro Timer', 
+                'ポモドーロタイマー'
+            ];
+            
+            if (defaultNames.includes(currentName) || !currentName) {
+                const newDefaultName = translations[currentLanguage].defaultTimerName;
+                timerTitle.textContent = newDefaultName;
+                timerNameInput.value = newDefaultName;
+                localStorage.setItem('timerName', newDefaultName);
+            }
+
+            timerNameInput.placeholder = translations[currentLanguage].defaultTimerName;
+
+            updateMessage();
+
+            if (isRunning) {
+                startBtn.textContent = translations[currentLanguage].pause;
+            } else {
+                startBtn.textContent = translations[currentLanguage].start;
+            }
+        }
+
+        function setLanguage(lang) {
+            currentLanguage = lang;
+            localStorage.setItem('language', lang);
+            applyLanguage();
+        }
+
+        const TIMES = {
+            focus: 25 * 60,
+            short: 5 * 60,
+            long: 15 * 60
+        };
+
+        function loadCustomTimes() {
+            const saved = localStorage.getItem('customTimes');
+            if (saved) {
+                const times = JSON.parse(saved);
+                TIMES.focus = times.focus * 60;
+                TIMES.short = times.short * 60;
+                TIMES.long = times.long * 60;
+                return times;
+            }
+            return { focus: 25, short: 5, long: 15 };
+        }
+
+        function saveCustomTimes() {
+            const times = {
+                focus: parseInt(focusTimeInput.value) || 25,
+                short: parseInt(shortTimeInput.value) || 5,
+                long: parseInt(longTimeInput.value) || 15
+            };
+            TIMES.focus = times.focus * 60;
+            TIMES.short = times.short * 60;
+            TIMES.long = times.long * 60;
+            localStorage.setItem('customTimes', JSON.stringify(times));
+            
+            if (!isRunning) {
+                timeLeft = TIMES[currentMode];
+                updateDisplay();
+            }
+        }
+
+        const MESSAGES = {
+            focus: {
+                running: 'focusing',
+                paused: 'paused',
+                complete: 'focusComplete'
+            },
+            short: {
+                running: 'breaking',
+                paused: 'paused',
+                complete: 'breakComplete'
+            },
+            long: {
+                running: 'breaking',
+                paused: 'paused',
+                complete: 'breakComplete'
+            }
+        };
+
+        let currentMode = 'focus';
+        
+        const initialTimes = loadCustomTimes();
+        
+        let timeLeft = TIMES[currentMode];
+        let isRunning = false;
+        let interval = null;
+        let startTime = null;
+        let totalDuration = 0;
+        let completedPomodoros = 0;
+        let totalFocusTime = 0;
+
+        const timerDisplay = document.getElementById('timerDisplay');
+        const startBtn = document.getElementById('startBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const message = document.getElementById('message');
+        const completedCount = document.getElementById('completedCount');
+        const totalTimeDisplay = document.getElementById('totalTime');
+        const notification = document.getElementById('notification');
+        const modeTabs = document.querySelectorAll('.mode-tab');
+        const themeToggle = document.getElementById('themeToggle');
+        const themeMenu = document.getElementById('themeMenu');
+        const themeOptions = document.querySelectorAll('.theme-option');
+        const timerNameInput = document.getElementById('timerName');
+        const timerTitle = document.querySelector('h1');
+        const focusTimeInput = document.getElementById('focusTime');
+        const shortTimeInput = document.getElementById('shortTime');
+        const longTimeInput = document.getElementById('longTime');
+        const catCenter = document.getElementById('catCenter');
+        const statsResetBtn = document.getElementById('statsResetBtn');
+        const soundSelect = document.getElementById('soundSelect');
+        const soundTestBtn = document.getElementById('soundTestBtn');
+
+        let currentSound = 'default';
+
+        function loadSound() {
+            const saved = localStorage.getItem('alarmSound') || 'default';
+            currentSound = saved;
+            soundSelect.value = saved;
+        }
+
+        function saveSound() {
+            currentSound = soundSelect.value;
+            localStorage.setItem('alarmSound', currentSound);
+        }
+
+        function playSound(soundType) {
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            
+            if (soundType === 'default') {
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                
+                const isCatTheme = document.body.classList.contains('cat');
+                oscillator.frequency.value = isCatTheme ? 1000 : 800;
+                oscillator.type = 'sine';
+                
+                gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+                
+                oscillator.start(audioContext.currentTime);
+                oscillator.stop(audioContext.currentTime + 0.5);
+            } else if (soundType === 'bell') {
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                
+                oscillator.frequency.value = 800;
+                oscillator.type = 'sine';
+                
+                gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 1.5);
+                
+                oscillator.start(audioContext.currentTime);
+                oscillator.stop(audioContext.currentTime + 1.5);
+            } else if (soundType === 'triple') {
+                for (let i = 0; i < 3; i++) {
+                    const oscillator = audioContext.createOscillator();
+                    const gainNode = audioContext.createGain();
+                    
+                    oscillator.connect(gainNode);
+                    gainNode.connect(audioContext.destination);
+                    
+                    oscillator.frequency.value = 880;
+                    oscillator.type = 'square';
+                    
+                    const startTime = audioContext.currentTime + (i * 0.3);
+                    gainNode.gain.setValueAtTime(0.2, startTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, startTime + 0.15);
+                    
+                    oscillator.start(startTime);
+                    oscillator.stop(startTime + 0.15);
+                }
+            } else if (soundType === 'melody') {
+                const notes = [523.25, 587.33, 659.25];
+                notes.forEach((freq, i) => {
+                    const oscillator = audioContext.createOscillator();
+                    const gainNode = audioContext.createGain();
+                    
+                    oscillator.connect(gainNode);
+                    gainNode.connect(audioContext.destination);
+                    
+                    oscillator.frequency.value = freq;
+                    oscillator.type = 'sine';
+                    
+                    const startTime = audioContext.currentTime + (i * 0.2);
+                    gainNode.gain.setValueAtTime(0.25, startTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, startTime + 0.3);
+                    
+                    oscillator.start(startTime);
+                    oscillator.stop(startTime + 0.3);
+                });
+            } else if (soundType === 'marimba') {
+                const notes = [659.25, 783.99];
+                notes.forEach((freq, i) => {
+                    const oscillator = audioContext.createOscillator();
+                    const gainNode = audioContext.createGain();
+                    
+                    oscillator.connect(gainNode);
+                    gainNode.connect(audioContext.destination);
+                    
+                    oscillator.frequency.value = freq;
+                    oscillator.type = 'triangle';
+                    
+                    const startTime = audioContext.currentTime + (i * 0.15);
+                    gainNode.gain.setValueAtTime(0.3, startTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, startTime + 0.4);
+                    
+                    oscillator.start(startTime);
+                    oscillator.stop(startTime + 0.4);
+                });
+            } else if (soundType === 'ding') {
+                const notes = [800, 600];
+                notes.forEach((freq, i) => {
+                    const oscillator = audioContext.createOscillator();
+                    const gainNode = audioContext.createGain();
+                    
+                    oscillator.connect(gainNode);
+                    gainNode.connect(audioContext.destination);
+                    
+                    oscillator.frequency.value = freq;
+                    oscillator.type = 'sine';
+                    
+                    const startTime = audioContext.currentTime + (i * 0.2);
+                    gainNode.gain.setValueAtTime(0.25, startTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, startTime + 0.5);
+                    
+                    oscillator.start(startTime);
+                    oscillator.stop(startTime + 0.5);
+                });
+            }
+        }
+
+        function updateCatEmoji() {
+            if (!document.body.classList.contains('cat')) return;
+            
+            if (currentMode === 'focus') {
+                if (isRunning) {
+                    catCenter.textContent = '😤';
+                } else if (timeLeft === 0) {
+                    catCenter.textContent = '😸';
+                } else {
+                    catCenter.textContent = '😺';
+                }
+            } else {
+                if (isRunning) {
+                    catCenter.textContent = '😴';
+                } else {
+                    catCenter.textContent = '😊';
+                }
+            }
+        }
+
+        function loadTheme() {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            applyTheme(savedTheme);
+        }
+
+        function applyTheme(theme) {
+            document.body.className = '';
+            if (theme !== 'light') {
+                document.body.classList.add(theme);
+            }
+            localStorage.setItem('theme', theme);
+        }
+
+        themeToggle.addEventListener('click', () => {
+            themeMenu.classList.toggle('show');
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!themeToggle.contains(e.target) && !themeMenu.contains(e.target)) {
+                themeMenu.classList.remove('show');
+            }
+        });
+
+        themeOptions.forEach(option => {
+            option.addEventListener('click', () => {
+                const theme = option.dataset.theme;
+                applyTheme(theme);
+                themeMenu.classList.remove('show');
+                updateCatEmoji();
+            });
+        });
+
+        function loadTodayStats() {
+            const saved = localStorage.getItem('pomodoroStats');
+            
+            if (saved) {
+                const data = JSON.parse(saved);
+                completedPomodoros = data.completed || 0;
+                totalFocusTime = data.totalTime || 0;
+            }
+            updateStatsDisplay();
+        }
+
+        function saveStats() {
+            localStorage.setItem('pomodoroStats', JSON.stringify({
+                completed: completedPomodoros,
+                totalTime: totalFocusTime
+            }));
+        }
+
+        function updateStatsDisplay() {
+            completedCount.textContent = completedPomodoros;
+            totalTimeDisplay.textContent = totalFocusTime;
+        }
+
+        function formatTime(seconds) {
+            const mins = Math.floor(seconds / 60);
+            const secs = seconds % 60;
+            return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        function updateDisplay() {
+            timerDisplay.textContent = formatTime(timeLeft);
+        }
+
+        function updateMessage() {
+            if (isRunning) {
+                message.textContent = translations[currentLanguage][MESSAGES[currentMode].running];
+            } else if (timeLeft === TIMES[currentMode]) {
+                message.textContent = currentMode === 'focus' ? 
+                    translations[currentLanguage].focusReady : 
+                    translations[currentLanguage].breakReady;
+            } else {
+                message.textContent = translations[currentLanguage][MESSAGES[currentMode].paused];
+            }
+            updateCatEmoji();
+        }
+
+        function showNotification(text) {
+            const translatedText = translations[currentLanguage][text];
+            const isCatTheme = document.body.classList.contains('cat');
+            notification.textContent = isCatTheme ? '🐱 ' + translatedText + ' 🐱' : translatedText;
+            notification.classList.add('show');
+            
+            playSound(currentSound);
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+
+        function startTimer() {
+            if (isRunning) {
+                isRunning = false;
+                clearInterval(interval);
+                startBtn.textContent = translations[currentLanguage].start;
+                updateMessage();
+                saveTimerState();
+                return;
+            }
+
+            if (timeLeft === 0) {
+                timeLeft = TIMES[currentMode];
+                updateDisplay();
+            }
+
+            isRunning = true;
+            startBtn.textContent = translations[currentLanguage].pause;
+            updateMessage();
+            
+            startTime = Date.now();
+            totalDuration = timeLeft;
+            
+            saveTimerState();
+
+            interval = setInterval(() => {
+                const elapsed = Math.floor((Date.now() - startTime) / 1000);
+                timeLeft = totalDuration - elapsed;
+                
+                if (timeLeft <= 0) {
+                    timeLeft = 0;
+                    updateDisplay();
+                    
+                    clearInterval(interval);
+                    isRunning = false;
+                    startTime = null;
+                    startBtn.textContent = translations[currentLanguage].start;
+                    
+                    if (currentMode === 'focus') {
+                        completedPomodoros++;
+                        totalFocusTime += Math.floor(TIMES.focus / 60);
+                        saveStats();
+                        updateStatsDisplay();
+                    }
+                    
+                    clearTimerState();
+                    updateCatEmoji();
+                    showNotification(MESSAGES[currentMode].complete);
+                    showBrowserNotification(MESSAGES[currentMode].complete);
+                    message.textContent = translations[currentLanguage][MESSAGES[currentMode].complete];
+                } else {
+                    updateDisplay();
+                }
+            }, 100);
+        }
+
+        function resetTimer() {
+            clearInterval(interval);
+            isRunning = false;
+            timeLeft = TIMES[currentMode];
+            startTime = null;
+            startBtn.textContent = translations[currentLanguage].start;
+            updateDisplay();
+            updateMessage();
+            clearTimerState();
+        }
+
+        function saveTimerState() {
+            if (isRunning && startTime) {
+                localStorage.setItem('timerState', JSON.stringify({
+                    mode: currentMode,
+                    startTime: startTime,
+                    totalDuration: totalDuration
+                }));
+            }
+        }
+
+        function clearTimerState() {
+            localStorage.removeItem('timerState');
+        }
+
+        function restoreTimerState() {
+            const saved = localStorage.getItem('timerState');
+            if (!saved) return;
+
+            try {
+                const state = JSON.parse(saved);
+                const elapsed = Math.floor((Date.now() - state.startTime) / 1000);
+                const remaining = state.totalDuration - elapsed;
+
+                if (remaining > 0) {
+                    currentMode = state.mode;
+                    timeLeft = remaining;
+                    
+                    modeTabs.forEach(tab => {
+                        tab.classList.remove('active');
+                        if (tab.dataset.mode === currentMode) {
+                            tab.classList.add('active');
+                        }
+                    });
+                    
+                    updateDisplay();
+                    updateMessage();
+                    
+                    startTimer();
+                } else {
+                    clearTimerState();
+                }
+            } catch (e) {
+                clearTimerState();
+            }
+        }
+
+        function requestNotificationPermission() {
+            if ('Notification' in window && Notification.permission === 'default') {
+                Notification.requestPermission();
+            }
+        }
+
+        function showBrowserNotification(text) {
+            if ('Notification' in window && Notification.permission === 'granted') {
+                const translatedText = translations[currentLanguage][text];
+                new Notification(timerTitle.textContent, {
+                    body: translatedText,
+                    icon: '⏰',
+                    silent: false
+                });
+            }
+        }
+
+        document.addEventListener('visibilitychange', () => {
+            if (!document.hidden && isRunning && startTime) {
+                const elapsed = Math.floor((Date.now() - startTime) / 1000);
+                timeLeft = totalDuration - elapsed;
+                
+                if (timeLeft <= 0) {
+                    timeLeft = 0;
+                    updateDisplay();
+                    
+                    clearInterval(interval);
+                    isRunning = false;
+                    startTime = null;
+                    startBtn.textContent = translations[currentLanguage].start;
+                    
+                    if (currentMode === 'focus') {
+                        completedPomodoros++;
+                        totalFocusTime += Math.floor(TIMES.focus / 60);
+                        saveStats();
+                        updateStatsDisplay();
+                    }
+                    
+                    clearTimerState();
+                    updateCatEmoji();
+                    showNotification(MESSAGES[currentMode].complete);
+                    showBrowserNotification(MESSAGES[currentMode].complete);
+                    message.textContent = translations[currentLanguage][MESSAGES[currentMode].complete];
+                } else {
+                    updateDisplay();
+                }
+            }
+        });
+
+        function switchMode(mode) {
+            if (isRunning) {
+                clearInterval(interval);
+                isRunning = false;
+                startTime = null;
+                clearTimerState();
+            }
+            
+            currentMode = mode;
+            timeLeft = TIMES[currentMode];
+            startBtn.textContent = translations[currentLanguage].start;
+            
+            modeTabs.forEach(tab => {
+                tab.classList.remove('active');
+                if (tab.dataset.mode === mode) {
+                    tab.classList.add('active');
+                }
+            });
+            
+            updateDisplay();
+            updateMessage();
+        }
+
+        startBtn.addEventListener('click', startTimer);
+        resetBtn.addEventListener('click', resetTimer);
+
+        modeTabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                switchMode(tab.dataset.mode);
+            });
+        });
+
+        function loadTimerName() {
+            const savedName = localStorage.getItem('timerName');
+            
+            const defaultNames = [
+                '뽀모도로 타이머',
+                'Pomodoro Timer', 
+                'ポモドーロタイマー'
+            ];
+            
+            if (!savedName || defaultNames.includes(savedName)) {
+                const defaultName = translations[currentLanguage].defaultTimerName;
+                timerTitle.textContent = defaultName;
+                timerNameInput.value = defaultName;
+                timerNameInput.placeholder = defaultName;
+                localStorage.setItem('timerName', defaultName);
+            } else {
+                timerTitle.textContent = savedName;
+                timerNameInput.value = savedName;
+                timerNameInput.placeholder = translations[currentLanguage].defaultTimerName;
+            }
+        }
+
+        function saveTimerName() {
+            const name = timerNameInput.value.trim();
+            if (name) {
+                timerTitle.textContent = name;
+                localStorage.setItem('timerName', name);
+            }
+        }
+
+        function handleTimerNameBlur() {
+            const name = timerNameInput.value.trim();
+            if (name) {
+                timerTitle.textContent = name;
+                localStorage.setItem('timerName', name);
+            } else {
+                const defaultName = translations[currentLanguage].defaultTimerName;
+                timerTitle.textContent = defaultName;
+                timerNameInput.value = defaultName;
+                localStorage.setItem('timerName', defaultName);
+            }
+        }
+
+        timerNameInput.addEventListener('input', saveTimerName);
+        timerNameInput.addEventListener('blur', handleTimerNameBlur);
+        
+        timerNameInput.addEventListener('keydown', (e) => {
+            e.stopPropagation();
+        });
+
+        focusTimeInput.value = initialTimes.focus;
+        shortTimeInput.value = initialTimes.short;
+        longTimeInput.value = initialTimes.long;
+
+        focusTimeInput.addEventListener('change', saveCustomTimes);
+        shortTimeInput.addEventListener('change', saveCustomTimes);
+        longTimeInput.addEventListener('change', saveCustomTimes);
+        
+        focusTimeInput.addEventListener('keydown', (e) => {
+            e.stopPropagation();
+        });
+        shortTimeInput.addEventListener('keydown', (e) => {
+            e.stopPropagation();
+        });
+        longTimeInput.addEventListener('keydown', (e) => {
+            e.stopPropagation();
+        });
+
+        statsResetBtn.addEventListener('click', () => {
+            if (confirm(translations[currentLanguage].confirmReset)) {
+                completedPomodoros = 0;
+                totalFocusTime = 0;
+                saveStats();
+                updateStatsDisplay();
+                themeMenu.classList.remove('show');
+            }
+        });
+
+        soundSelect.addEventListener('change', saveSound);
+
+        soundTestBtn.addEventListener('click', () => {
+            playSound(currentSound);
+        });
+
+        document.querySelectorAll('.language-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const lang = btn.getAttribute('data-lang-btn');
+                setLanguage(lang);
+            });
+        });
+
+        document.addEventListener('keydown', (e) => {
+            const activeElement = document.activeElement;
+            const isInputActive = activeElement.tagName === 'INPUT' || 
+                                  activeElement.tagName === 'TEXTAREA';
+            
+            if (e.code === 'Space' && !isInputActive) {
+                e.preventDefault();
+                startTimer();
+            } else if (e.code === 'KeyR' && !isInputActive) {
+                resetTimer();
+            }
+        });
+
+        loadTheme();
+        loadLanguage();
+        loadTimerName();
+        loadTodayStats();
+        loadSound();
+        restoreTimerState();
+        updateDisplay();
+        updateMessage();
+        updateCatEmoji();
+        requestNotificationPermission();
+    </script>
+</body>
+</html>
