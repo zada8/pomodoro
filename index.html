@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pomodoro Timer</title>
+    <title>뽀모도로 타이머</title>
     <style>
         * {
             margin: 0;
@@ -119,12 +119,15 @@
             background: white;
             border-radius: 12px;
             padding: 12px;
+            padding-bottom: 24px;
             box-shadow: 0 10px 40px rgba(0,0,0,0.15);
             display: none;
             z-index: 100;
             min-width: 200px;
             max-height: calc(100vh - 100px);
             overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            overscroll-behavior: contain;
         }
 
         .theme-menu.show {
@@ -634,8 +637,13 @@
             }
 
             .theme-menu {
-                top: 60px;
+                top: 65px;
                 right: 16px;
+                left: 16px;
+                max-height: calc(100vh - 85px);
+                max-height: calc(100dvh - 85px);
+                overflow-y: scroll;
+                -webkit-overflow-scrolling: touch;
             }
         }
 
@@ -1199,12 +1207,18 @@
         }
 
         themeToggle.addEventListener('click', () => {
-            themeMenu.classList.toggle('show');
+            const isShowing = themeMenu.classList.toggle('show');
+            if (isShowing) {
+                document.body.style.overflow = 'hidden';
+            } else {
+                document.body.style.overflow = '';
+            }
         });
 
         document.addEventListener('click', (e) => {
             if (!themeToggle.contains(e.target) && !themeMenu.contains(e.target)) {
                 themeMenu.classList.remove('show');
+                document.body.style.overflow = '';
             }
         });
 
@@ -1213,6 +1227,7 @@
                 const theme = option.dataset.theme;
                 applyTheme(theme);
                 themeMenu.classList.remove('show');
+                document.body.style.overflow = '';
                 updateCatEmoji();
             });
         });
@@ -1544,6 +1559,7 @@
                 saveStats();
                 updateStatsDisplay();
                 themeMenu.classList.remove('show');
+                document.body.style.overflow = '';
             }
         });
 
