@@ -3,6 +3,8 @@
 
 <br>
 
+[🔗 바로 사용해보기](https://zada8.github.io/pomodoro/)
+
 ### 실행 화면
 <img width="200" alt="Image" src="https://github.com/user-attachments/assets/3163767f-2113-4e77-bf98-d11a958149a7" />
 
