@@ -3,6 +3,15 @@
 
 <br>
 
+### 실행 화면
+<img width="200" alt="Image" src="https://github.com/user-attachments/assets/3163767f-2113-4e77-bf98-d11a958149a7" />
+
+<img width="200" alt="Image" src="https://github.com/user-attachments/assets/db9b937d-3163-46e8-b76e-956a1ee1874e" />
+
+<img width="200" alt="Image" src="https://github.com/user-attachments/assets/17df3f1e-a2d6-4038-b6b0-f02c3000b670" />
+
+<img width="200" alt="Image" src="https://github.com/user-attachments/assets/f74bb129-5fb9-4ebe-87d7-446eadd25a27" />
+
 ### 주요 기능
 
 
